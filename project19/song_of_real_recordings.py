@@ -7,7 +7,8 @@ It makes two files:
 
 HOW IT WORKS
 * Every collision gets exactly the same treatment as GW150914 in starters/19_hear_a_merger.py:
-  LIGO Livingston data (Hanford if Livingston wasn't recording), whitened (the noise evened out
+  LIGO Livingston data (Hanford if Livingston wasn't recording, and for GW170817, where
+  Livingston has a famous noise glitch; see USE_HANFORD below), whitened (the noise evened out
   across pitches), only 30-400 Hz kept, 3 seconds from 2 s before the merger to 1 s after,
   scaled so its loudest moment is 1. Same WAV settings too: 4096 samples per second, 32-bit.
 * The clips play one after another in the order they were detected, so the merger always comes
@@ -71,14 +72,36 @@ catalog['GPS'] = pd.to_numeric(catalog.GPS)
 # Every version of every event: older versions are often the ones with the small 32-second files.
 all_versions = get_json('https://gwosc.org/eventapi/jsonfull/allevents/', 'gwosc_allevents.json')['events']
 
-DETECTORS = ['L1', 'H1']   # Livingston first (like the starter), then Hanford
-small_file = {}            # event name -> (detector, url)
-for entry in sorted(all_versions.values(), key=lambda e: e['version']):   # newest version wins
-    for det in reversed(DETECTORS):                                       # so L1 wins over H1
+# GW170817 is special: LIGO Livingston recorded a loud burst of detector noise (a "glitch") about
+# 1 second before that merger, around 200 times bigger than the normal noise. Scaled to its loudest
+# moment, the Livingston clip is one loud pop with the chirp almost silent. Hanford had no glitch,
+# so for this event we use Hanford instead.
+USE_HANFORD = {'GW170817'}
+
+
+def small_file_url(entries, detector):
+    """URL of the newest 32-second, 4096-samples-per-second file for one detector (or None)."""
+    url = None
+    for entry in sorted(entries, key=lambda e: e['version']):    # later versions replace earlier
         for s in entry['strain']:
-            if (s['detector'] == det and s['duration'] == 32 and s['sampling_rate'] == 4096
+            if (s['detector'] == detector and s['duration'] == 32 and s['sampling_rate'] == 4096
                     and s['format'] == 'hdf5'):
-                small_file[entry['commonName']] = (det, s['url'])
+                url = s['url']
+    return url
+
+
+versions_of = {}                # event name -> all its versions
+for entry in all_versions.values():
+    versions_of.setdefault(entry['commonName'], []).append(entry)
+
+small_file = {}                 # event name -> (detector, url)
+for name, entries in versions_of.items():
+    preference = ['H1', 'L1'] if name in USE_HANFORD else ['L1', 'H1']   # Livingston first, like the starter
+    for det in preference:
+        url = small_file_url(entries, det)
+        if url:
+            small_file[name] = (det, url)
+            break
 
 events = catalog[catalog.commonName.isin(small_file)].sort_values('GPS').reset_index(drop=True)
 print(f'{len(catalog)} collisions in the catalog; {len(events)} have a small data file -> one clip each')
@@ -135,7 +158,8 @@ for k, ((name, det), (t, f, power)) in enumerate(zip(used, spectrograms)):
     ax = axes[k]
     mesh = ax.pcolormesh(t, f, power, cmap='viridis', vmin=0, vmax=25, shading='auto')
     starts = k * clip_len                           # when this clip starts in the song (seconds)
-    ax.set_title(f"{starts // 60}:{starts % 60:02d}  {name.split('_')[0]}", fontsize=9)
+    hanford = '  (Hanford)' if det == 'H1' else ''
+    ax.set_title(f'{starts // 60}:{starts % 60:02d}  {name}{hanford}', fontsize=8)
     ax.set_yscale('log')
 for ax in axes[len(used):]:
     ax.axis('off')                                  # hide empty panels in the last row
@@ -156,9 +180,10 @@ fig.text(0.01, 1 - 0.75 / fig.get_figheight(),
          'Colour scale fixed at 0-25 for all panels so they can be compared. '
          'Data: LIGO/Virgo/KAGRA via the Gravitational Wave Open Science Center (gwosc.org).',
          fontsize=11, va='top')
-fig.colorbar(mesh, ax=axes.tolist(), label='Normalized energy', fraction=0.015, pad=0.01)
 fig.subplots_adjust(top=1 - 1.4 / fig.get_figheight(), left=0.03, right=0.94, bottom=0.04,
                     hspace=0.45, wspace=0.08)
+color_bar_axis = fig.add_axes([0.955, 0.25, 0.008, 0.5])     # its own spot, right of the panels
+fig.colorbar(mesh, cax=color_bar_axis, label='Normalized energy')
 png_path = os.path.join(PLOTS, '19_real_recordings_gallery.png')
 fig.savefig(png_path, dpi=100)
 print(f'Saved {png_path}')
