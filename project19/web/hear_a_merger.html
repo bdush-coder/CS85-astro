@@ -1,0 +1,1196 @@
+<title>Hear a Black Hole Merger</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="An interactive lesson on what the first black-hole collision ever detected sounded like in LIGO's detectors, built from real LIGO data.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=Unbounded:wght@500;600;700&display=swap">
+<style>
+/* Layout: one lesson column (max 1160px) that opens on a live black-hole hero; steps 2-5 share a sticky
+   observatory panel on the left while the step cards scroll on the right.
+   Look: one deliberate deep-space theme, coloured from the spectrograms' own viridis scale
+   (purple haze, teal signal, yellow "now"). */
+:root {
+  color-scheme: dark;
+  --bg: #05060d;
+  --surface: #0d1024;
+  --surface-2: #151935;
+  --glass: rgba(255, 255, 255, 0.035);
+  --ink: #edf0fa;
+  --ink-2: #b0b6d1;
+  --muted: #7a81a3;
+  --line: rgba(150, 160, 255, 0.15);
+  --line-strong: rgba(150, 160, 255, 0.3);
+  --accent: #35d0c0;
+  --accent-ink: #032420;
+  --accent-soft: rgba(53, 208, 192, 0.11);
+  --glow: #fde725;
+  --violet: #7b4fd6;
+  --good: #46d27a;
+  --bad: #ff7b72;
+  --kind-bbh: #3987e5;
+  --kind-nsbh: #d95926;
+  --kind-bns: #199e70;
+  --space: #04050b;
+  --font-display: "Unbounded", "Space Grotesk", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-body: "IBM Plex Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-data: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --radius: 14px;
+}
+
+* { box-sizing: border-box; }
+body {
+  background-color: var(--bg);
+  background-image:
+    radial-gradient(1100px 620px at 85% -8%, rgba(123, 79, 214, 0.20), transparent 62%),
+    radial-gradient(900px 520px at -12% 22%, rgba(53, 208, 192, 0.07), transparent 60%);
+  background-repeat: no-repeat;
+  color: var(--ink);
+  font: 16px/1.62 var(--font-body);
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.page { max-width: 1160px; margin: 0 auto; padding-block: 24px 72px; display: grid; gap: 72px; }
+h1, h2, h3 { font-family: var(--font-display); line-height: 1.12; text-wrap: balance; margin: 0; }
+h1 { font-size: clamp(2.2rem, 5.6vw, 4.1rem); font-weight: 700; letter-spacing: -0.035em; }
+h1 em { font-style: normal; background: linear-gradient(90deg, var(--accent), var(--glow)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+h2 { font-size: clamp(1.35rem, 2.8vw, 1.85rem); font-weight: 600; letter-spacing: -0.02em; }
+h3 { font-size: 1.08rem; font-weight: 600; letter-spacing: -0.01em; }
+p { margin: 0; }
+.prose { display: grid; gap: 12px; max-width: 66ch; }
+.prose p, .card p { color: var(--ink-2); }
+.prose strong, .card strong { color: var(--ink); font-weight: 600; }
+.eyebrow { font: 500 0.74rem/1.3 var(--font-data); letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); }
+.mono { font-family: var(--font-data); }
+.small { font-size: 0.875rem; }
+.muted { color: var(--muted); }
+code { font: 0.85em var(--font-data); background: var(--surface-2); color: var(--ink); padding: 1px 6px; border-radius: 5px; border: 1px solid var(--line); }
+a { color: var(--accent); }
+
+/* ---------- hero ---------- */
+.hero { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr); gap: 8px 32px; align-items: center; }
+.hero-text { display: grid; gap: 22px; min-width: 0; }
+.hero-visual { position: relative; min-width: 0; }
+#cv-hero {
+  aspect-ratio: 1 / 1; width: 100%; max-width: 560px; margin-inline: auto;
+  -webkit-mask-image: radial-gradient(circle at 50% 50%, #000 52%, transparent 71%);
+  mask-image: radial-gradient(circle at 50% 50%, #000 52%, transparent 71%);
+}
+.hero-caption { position: absolute; left: 0; right: 0; bottom: 6%; text-align: center; font: 500 0.7rem/1.4 var(--font-data); letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+.question {
+  position: relative; padding: 16px 18px 16px 20px; max-width: 60ch; border-radius: 12px;
+  background: linear-gradient(90deg, var(--accent-soft), transparent 85%);
+  border-left: 2px solid var(--accent);
+  font: 500 1.12rem/1.5 var(--font-body); color: var(--ink);
+}
+.question span { display: block; font: 500 0.72rem/1.3 var(--font-data); letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); margin-bottom: 6px; }
+.facts { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); margin: 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.facts > div { padding: 14px 14px 14px 0; display: grid; gap: 4px; min-width: 0; }
+.facts > div + div { padding-left: 14px; border-left: 1px solid var(--line); }
+.facts dt { font: 500 0.68rem/1.3 var(--font-data); letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+.facts dd { margin: 0; font: 600 1.15rem/1.2 var(--font-display); letter-spacing: -0.02em; }
+.facts dd small { display: block; font: 400 0.8rem/1.4 var(--font-body); color: var(--ink-2); letter-spacing: 0; margin-top: 2px; }
+nav.steps-nav { display: flex; flex-wrap: wrap; gap: 8px; }
+nav.steps-nav a {
+  text-decoration: none; color: var(--ink-2); font: 500 0.84rem/1 var(--font-body);
+  padding: 9px 13px; border: 1px solid var(--line); border-radius: 999px; background: var(--glass);
+  transition: border-color .15s, color .15s, box-shadow .15s;
+}
+nav.steps-nav a:hover { border-color: var(--accent); color: var(--ink); box-shadow: 0 0 18px rgba(53, 208, 192, 0.18); }
+nav.steps-nav a b { font-family: var(--font-data); color: var(--accent); margin-right: 7px; font-weight: 500; }
+
+/* ---------- generic pieces ---------- */
+section { display: grid; gap: 22px; scroll-margin-top: 16px; }
+.section-head { display: grid; gap: 10px; }
+.step-num { font: 500 0.76rem/1 var(--font-data); color: var(--accent); letter-spacing: 0.14em; display: flex; align-items: center; gap: 10px; }
+.step-num::after { content: ""; height: 1px; flex: 1; max-width: 120px; background: linear-gradient(90deg, var(--accent), transparent); }
+.card {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.012)), var(--surface);
+  border: 1px solid var(--line); border-radius: var(--radius); padding: 22px; display: grid; gap: 14px; min-width: 0;
+}
+button { font: inherit; cursor: pointer; }
+.btn {
+  display: inline-flex; align-items: center; gap: 8px; border-radius: 999px; padding: 10px 17px;
+  border: 1px solid var(--line-strong); background: var(--glass); color: var(--ink); font-weight: 500; font-size: 0.9rem;
+  transition: border-color .15s, box-shadow .15s, filter .15s;
+}
+.btn:hover { border-color: var(--accent); box-shadow: 0 0 20px rgba(53, 208, 192, 0.2); }
+.btn.primary { background: linear-gradient(135deg, #3fe0cf, #22a99c); color: var(--accent-ink); border-color: transparent; font-weight: 600; box-shadow: 0 0 24px rgba(53, 208, 192, 0.25); }
+.btn.primary:hover { filter: brightness(1.08); box-shadow: 0 0 34px rgba(53, 208, 192, 0.4); }
+.btn svg { width: 14px; height: 14px; flex: none; }
+:focus-visible { outline: 2px solid var(--glow); outline-offset: 2px; }
+.row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.chips { display: inline-flex; flex-wrap: wrap; gap: 3px; padding: 3px; border: 1px solid var(--line); border-radius: 999px; background: rgba(0, 0, 0, 0.25); }
+.chips button { border: 0; background: transparent; color: var(--ink-2); padding: 6px 12px; border-radius: 999px; font-size: 0.82rem; font-weight: 500; }
+.chips button[aria-pressed="true"] { background: var(--surface-2); color: var(--ink); box-shadow: 0 0 0 1px var(--line-strong); }
+.hint { font-size: 0.85rem; color: var(--muted); }
+.note { background: var(--accent-soft); border: 1px solid rgba(53, 208, 192, 0.22); border-radius: 10px; padding: 12px 14px; font-size: 0.92rem; color: var(--ink-2); }
+.note strong { color: var(--ink); }
+canvas { display: block; width: 100%; }
+.err { color: var(--bad); font-size: 0.9rem; }
+.time-readout { font: 500 0.84rem/1 var(--font-data); color: var(--ink-2); font-variant-numeric: tabular-nums; }
+input[type="range"] { width: 100%; accent-color: var(--accent); }
+
+/* ---------- step 1: listening card ---------- */
+.listen { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr); gap: 24px; align-items: start; }
+.listen-figure { display: grid; gap: 8px; }
+.fig-label { font: 500 0.7rem/1.4 var(--font-data); color: var(--muted); letter-spacing: 0.08em; }
+#cv-listen { aspect-ratio: 16 / 9; cursor: pointer; border-radius: 8px; }
+
+/* ---------- steps 2-5: observatory + step cards ---------- */
+.lesson { display: grid; grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.92fr); gap: 26px; align-items: start; }
+.observatory {
+  position: sticky; top: calc(env(safe-area-inset-top, 0px) + 12px);
+  background: linear-gradient(180deg, rgba(123, 79, 214, 0.10), rgba(255, 255, 255, 0.01)), var(--surface);
+  border: 1px solid var(--line-strong); border-radius: var(--radius); padding: 12px; display: grid; gap: 10px;
+  box-shadow: 0 0 60px rgba(123, 79, 214, 0.12);
+}
+#cv-space { aspect-ratio: 16 / 10; border-radius: 9px; background: var(--space); }
+.readouts { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin: 0; }
+.readouts div { background: rgba(0, 0, 0, 0.3); border: 1px solid var(--line); border-radius: 9px; padding: 8px 10px; min-width: 0; }
+.readouts dt { font: 500 0.62rem/1.2 var(--font-data); letter-spacing: 0.09em; text-transform: uppercase; color: var(--muted); }
+.readouts dd { margin: 3px 0 0; font: 500 1.12rem/1.2 var(--font-data); font-variant-numeric: tabular-nums; white-space: nowrap; color: var(--glow); }
+.readouts dd small { font: 400 0.7rem var(--font-body); color: var(--muted); margin-left: 3px; }
+.status { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; font-size: 0.85rem; color: var(--ink-2); }
+.status b { color: var(--ink); font: 500 0.9rem var(--font-data); }
+#cv-zoom { aspect-ratio: 560 / 205; cursor: crosshair; }
+.obs-controls { display: grid; gap: 8px; }
+.cards { display: grid; gap: 18px; }
+.step-card { scroll-margin-top: 16px; transition: border-color .25s, box-shadow .25s; }
+.step-card.active { border-color: rgba(53, 208, 192, 0.65); box-shadow: 0 0 0 1px rgba(53, 208, 192, 0.35), 0 0 40px rgba(53, 208, 192, 0.12); }
+.step-card ol { margin: 0; padding-left: 0; list-style: none; display: grid; gap: 6px; counter-reset: why; }
+.step-card ol li {
+  counter-increment: why; display: grid; grid-template-columns: 26px minmax(0, 1fr); gap: 10px;
+  padding: 9px 10px; border-radius: 10px; color: var(--ink-2); cursor: pointer; border: 1px solid transparent; transition: background .2s, border-color .2s;
+}
+.step-card ol li::before {
+  content: counter(why); font: 500 0.76rem/24px var(--font-data); text-align: center; width: 24px; height: 24px;
+  border-radius: 50%; background: var(--surface-2); color: var(--ink-2); border: 1px solid var(--line);
+}
+.step-card ol li:hover { border-color: var(--line); }
+.step-card ol li.on { background: var(--accent-soft); color: var(--ink); border-color: rgba(53, 208, 192, 0.3); }
+.step-card ol li.on::before { background: var(--glow); color: #1b1600; border-color: transparent; box-shadow: 0 0 14px rgba(253, 231, 37, 0.5); }
+.quote-src { font-size: 0.78rem; color: var(--muted); font-family: var(--font-data); }
+.mini-facts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin: 0; }
+.mini-facts div { border: 1px solid var(--line); border-radius: 10px; padding: 9px 11px; background: rgba(0, 0, 0, 0.2); }
+.mini-facts dt { font: 500 0.66rem/1.3 var(--font-data); text-transform: uppercase; letter-spacing: .09em; color: var(--muted); }
+.mini-facts dd { margin: 2px 0 0; font-weight: 600; }
+
+/* ---------- quiz ---------- */
+.quiz { display: grid; gap: 22px; }
+.q { display: grid; gap: 10px; }
+.q h3 { font-size: 1rem; }
+.q .opts { display: grid; gap: 6px; }
+.q button.opt {
+  text-align: left; border: 1px solid var(--line); background: rgba(0, 0, 0, 0.22); color: var(--ink);
+  border-radius: 10px; padding: 11px 13px; display: grid; grid-template-columns: 22px minmax(0, 1fr); gap: 8px; align-items: start;
+  transition: border-color .15s, background .15s;
+}
+.q button.opt:hover { border-color: var(--accent); background: var(--accent-soft); }
+.q button.opt .mark { font-family: var(--font-data); color: var(--muted); }
+.q button.opt.right { border-color: var(--good); background: rgba(70, 210, 122, 0.1); }
+.q button.opt.right .mark { color: var(--good); }
+.q button.opt.wrong { border-color: var(--bad); background: rgba(255, 123, 114, 0.08); }
+.q button.opt.wrong .mark { color: var(--bad); }
+.q .why { font-size: 0.92rem; color: var(--ink-2); border-left: 2px solid var(--line); padding-left: 12px; }
+.q .why.right { border-color: var(--good); }
+.q .why.wrong { border-color: var(--bad); }
+.score { font: 600 0.95rem var(--font-display); }
+.answer-box {
+  position: relative; border-radius: var(--radius); padding: 24px; display: grid; gap: 12px;
+  background: linear-gradient(135deg, rgba(53, 208, 192, 0.12), rgba(123, 79, 214, 0.14) 60%, rgba(253, 231, 37, 0.06)), var(--surface);
+  border: 1px solid rgba(53, 208, 192, 0.45); box-shadow: 0 0 50px rgba(53, 208, 192, 0.12);
+}
+.answer-box p { color: var(--ink); max-width: 72ch; font-size: 1.04rem; }
+
+/* ---------- songs ---------- */
+.player-bar { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 14px; align-items: center; }
+.score-wrap { position: relative; overflow-x: auto; }
+.score-wrap svg { display: block; width: 100%; min-width: 640px; height: auto; }
+.score-wrap svg text { font-family: var(--font-data); font-size: 11px; fill: var(--muted); }
+.score-wrap svg .run-band { fill: rgba(150, 160, 255, 0.06); }
+.score-wrap svg .run-label { fill: var(--ink-2); font-size: 11px; }
+.score-wrap svg .grid { stroke: var(--line); stroke-width: 1; }
+.score-wrap svg .axis { stroke: var(--line-strong); stroke-width: 1; }
+.score-wrap svg .dot { stroke: var(--surface); stroke-width: 1.2; opacity: 0.8; }
+.score-wrap svg .dot.bbh { fill: var(--kind-bbh); }
+.score-wrap svg .dot.nsbh { fill: var(--kind-nsbh); }
+.score-wrap svg .dot.bns { fill: var(--kind-bns); }
+.score-wrap svg .dot.on { opacity: 1; stroke: var(--glow); stroke-width: 2.5; }
+.score-wrap svg .dot.sel { stroke: var(--ink); stroke-width: 2.5; opacity: 1; }
+.score-wrap svg .hit { fill: transparent; cursor: pointer; }
+.score-wrap svg .playhead { stroke: var(--glow); stroke-width: 1.5; }
+.tooltip {
+  position: absolute; pointer-events: none; background: var(--surface-2); border: 1px solid var(--line-strong); border-radius: 10px;
+  padding: 8px 10px; font-size: 0.8rem; box-shadow: 0 8px 28px rgba(0, 0, 0, .5); max-width: 240px; z-index: 2;
+}
+.tooltip b { font-family: var(--font-data); font-weight: 500; }
+.legend { display: flex; flex-wrap: wrap; gap: 16px; font-size: 0.84rem; color: var(--ink-2); }
+.legend span { display: inline-flex; align-items: center; gap: 7px; }
+.legend i { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+.now { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; }
+.now-panel { border: 1px solid var(--line); background: rgba(0, 0, 0, 0.22); border-radius: 12px; padding: 13px 15px; display: grid; gap: 6px; min-width: 0; align-content: start; }
+.now-panel .lbl { font: 500 0.68rem/1.2 var(--font-data); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.now-panel .name { font: 500 1.05rem var(--font-data); color: var(--glow); overflow-wrap: anywhere; }
+.now-panel .desc { font-size: 0.9rem; color: var(--ink-2); }
+.trio { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+.trio button { text-align: left; border: 1px solid var(--line); background: rgba(0, 0, 0, 0.22); color: var(--ink); border-radius: 12px; padding: 12px 14px; display: grid; gap: 3px; transition: border-color .15s, box-shadow .15s; }
+.trio button:hover { border-color: var(--accent); box-shadow: 0 0 22px rgba(53, 208, 192, 0.18); }
+.trio b { font-family: var(--font-display); font-size: 0.98rem; font-weight: 600; }
+.trio span { font-size: 0.78rem; color: var(--muted); }
+
+.real-now { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+#cv-real { aspect-ratio: 16 / 8.5; border-radius: 8px; cursor: pointer; }
+.tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 8px; }
+.tile { border: 1px solid var(--line); border-radius: 8px; background: rgba(0, 0, 0, 0.25); padding: 4px; display: grid; gap: 4px; color: var(--ink-2); text-align: left; transition: border-color .15s; }
+.tile:hover { border-color: var(--accent); }
+.tile.on { border-color: var(--glow); box-shadow: 0 0 0 1px var(--glow), 0 0 18px rgba(253, 231, 37, 0.25); color: var(--ink); }
+.tile .img { aspect-ratio: 300 / 64; border-radius: 4px; background-image: url("clip_spectrograms.jpg"); background-repeat: no-repeat; }
+.tile span { font: 400 0.64rem/1.2 var(--font-data); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.picks { display: flex; flex-wrap: wrap; gap: 6px; }
+.picks button { border: 1px solid var(--line); background: var(--glass); color: var(--ink-2); border-radius: 999px; padding: 5px 11px; font: 0.76rem var(--font-data); }
+.picks button:hover { border-color: var(--glow); color: var(--ink); }
+
+.glossary { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 32px; margin: 0; }
+.glossary div { padding: 12px 0; border-top: 1px solid var(--line); }
+.glossary dt { font: 600 0.95rem var(--font-display); letter-spacing: -0.01em; }
+.glossary dd { margin: 3px 0 0; color: var(--ink-2); font-size: 0.92rem; }
+footer { display: grid; gap: 10px; font-size: 0.86rem; color: var(--ink-2); border-top: 1px solid var(--line); padding-top: 22px; }
+footer ul { margin: 0; padding-left: 18px; display: grid; gap: 5px; }
+
+@media (max-width: 900px) {
+  .hero { grid-template-columns: minmax(0, 1fr); }
+  .hero-visual { order: -1; max-width: 420px; width: 100%; margin-inline: auto; }
+  .lesson { grid-template-columns: minmax(0, 1fr); }
+  .observatory { position: static; }
+  .listen, .real-now, .now { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 640px) {
+  .page { gap: 56px; }
+  .facts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .facts > div:nth-child(3) { padding-left: 0; border-left: 0; }
+  .facts > div:nth-child(n+3) { border-top: 1px solid var(--line); }
+  .readouts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .trio { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .glossary { grid-template-columns: minmax(0, 1fr); }
+  .player-bar { grid-template-columns: auto minmax(0, 1fr); }
+  .player-bar .time-readout { grid-column: 1 / -1; }
+  .card { padding: 16px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .step-card, .btn, nav.steps-nav a, .tile, .trio button, .q button.opt, .step-card ol li { transition: none; }
+}
+</style>
+
+<div class="page">
+
+<header class="hero">
+ <div class="hero-text">
+  <div class="eyebrow">CS85 · Project 19 · LIGO · GW150914</div>
+  <h1>Hear a black hole <em>merger</em></h1>
+  <div class="question"><span>Question 19</span>What did the first black-hole collision ever detected (2015) actually “sound” like in LIGO’s detectors?</div>
+  <div class="prose">
+    <p>This page answers that question in six short steps. You don’t need any physics: every step has something to <strong>play, drag or press</strong>. All the sounds and pictures come from real LIGO data. The animation of the black holes uses the standard textbook formula with the masses LIGO measured.</p>
+  </div>
+ </div>
+ <div class="hero-visual">
+  <canvas id="cv-hero" aria-label="Animation: two black holes spiralling together and merging, sending out spiral gravitational waves"></canvas>
+  <div class="hero-caption">GW150914 · 34.6 + 30.0 Suns · 40× slower</div>
+ </div>
+ <div class="hero-text" style="grid-column: 1 / -1">
+  <dl class="facts" id="facts">
+    <div><dt>Date</dt><dd>14 Sep 2015<small>09:50:45 UTC, LIGO Livingston</small></dd></div>
+    <div><dt>What merged</dt><dd><span data-f="m1">34.6</span> + <span data-f="m2">30.0</span> Suns<small>two black holes</small></dd></div>
+    <div><dt>Turned into waves</dt><dd><span data-f="lost">3.0</span> Suns<small>of mass, in under a second</small></dd></div>
+    <div><dt>Travelled</dt><dd><span data-f="travel">1.3</span> billion years<small>before reaching Earth</small></dd></div>
+  </dl>
+  <nav class="steps-nav" aria-label="Steps">
+    <a href="#listen"><b>1</b>Listen</a>
+    <a href="#meet"><b>2</b>The black holes</a>
+    <a href="#sound"><b>3</b>How it becomes sound</a>
+    <a href="#pitch"><b>4</b>Why the pitch rises</a>
+    <a href="#vanish"><b>5</b>How it disappears</a>
+    <a href="#quiz"><b>6</b>Check yourself</a>
+    <a href="#songs">More: two songs</a>
+  </nav>
+ </div>
+</header>
+
+<!-- ======================= STEP 1 ======================= -->
+<section id="listen">
+  <div class="section-head">
+    <div class="step-num">STEP 1 OF 6</div>
+    <h2>Listen first</h2>
+  </div>
+  <div class="card listen">
+    <div class="prose">
+      <p>Press play. This is <strong>3 seconds of real data</strong> from the LIGO detector in Livingston, Louisiana, on 14 September 2015 (your starter’s file, <code>plots/19_gw150914_livingston.wav</code>).</p>
+      <p><strong>What you’ll hear:</strong> it’s mostly a hiss of noise. The chirp is a quick upward “whoop” about 2 seconds in. Before saving, the script evens out the noise across pitches and keeps only 30–400 Hz, where the signal lives. Even so, the chirp is a low sound and laptop speakers are bad at bass, so headphones help.</p>
+      <p class="hint">Can’t hear it? Pick “4× higher”. Playing the file faster raises the pitch so small speakers can play it, but it also makes the clip 4× shorter.</p>
+      <div class="row">
+        <button class="btn primary" id="listen-play" type="button"><svg viewBox="0 0 14 14" aria-hidden="true"><path d="M3 1.5v11l9-5.5z" fill="currentColor"/></svg><span>Play the recording</span></button>
+        <div class="chips" role="group" aria-label="Pitch" data-rate-for="gw">
+          <button type="button" data-rate="1" aria-pressed="true">Real pitch</button>
+          <button type="button" data-rate="2" aria-pressed="false">2× higher</button>
+          <button type="button" data-rate="4" aria-pressed="false">4× higher</button>
+        </div>
+      </div>
+      <div class="err" id="listen-err" hidden></div>
+    </div>
+    <div class="listen-figure">
+      <div class="fig-label">TOP: THE NUMBERS LIGO RECORDED (4,096 PER SECOND), AS A WAVE · BOTTOM: THE SAME 3 SECONDS AS A PICTURE OF PITCH</div>
+      <canvas id="cv-listen" aria-label="Waveform and spectrogram of the 3-second GW150914 recording. Click to jump to a moment."></canvas>
+      <div class="row" style="justify-content:space-between"><span class="hint">Click the picture to jump to a moment.</span><span class="time-readout" id="listen-time">0.00 / 3.00 s</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= STEPS 2-5 ======================= -->
+<div class="lesson">
+  <div class="observatory" aria-label="Interactive view of the merger">
+    <canvas id="cv-space" aria-label="Animation of the two black holes orbiting, with the gravitational waves they send out and LIGO's arms stretching"></canvas>
+    <div class="status"><span id="st-when"><b>−0.300 s</b></span><span id="st-what">Two black holes orbiting each other</span></div>
+    <dl class="readouts">
+      <div><dt>Wave pitch</dt><dd id="ro-f">–</dd></div>
+      <div><dt>Orbits / second</dt><dd id="ro-orb">–</dd></div>
+      <div><dt>Distance apart</dt><dd id="ro-a">–</dd></div>
+      <div><dt>Speed</dt><dd id="ro-v">–</dd></div>
+    </dl>
+    <canvas id="cv-zoom" aria-label="Real LIGO spectrogram of the merger, with the formula's prediction and the current moment marked. Click to jump."></canvas>
+    <div class="obs-controls">
+      <input type="range" id="scrub" min="-0.5" max="0.2" step="0.0005" value="-0.3" aria-label="Time around the merger (seconds)">
+      <div class="row">
+        <button class="btn primary" id="slow-play" type="button"><svg viewBox="0 0 14 14" aria-hidden="true"><path d="M3 1.5v11l9-5.5z" fill="currentColor"/></svg><span>Play in slow motion</span></button>
+        <div class="chips" role="group" aria-label="Slow-motion speed" id="slow-chips">
+          <button type="button" data-slow="40" aria-pressed="true">40× slower</button>
+          <button type="button" data-slow="250" aria-pressed="false">250× slower</button>
+        </div>
+        <button class="btn" id="real-play" type="button">Hear it at real speed</button>
+      </div>
+      <p class="hint">Slow motion is silent: slowed down 40 times, the pitch would be far too low to hear. “Hear it at real speed” plays the real recording, and the picture follows along.</p>
+    </div>
+  </div>
+
+  <div class="cards">
+    <!-- STEP 2 -->
+    <article class="card step-card" id="meet" data-range="-0.5,-0.2">
+      <div class="step-num">STEP 2 OF 6</div>
+      <h2>Meet the two black holes</h2>
+      <p>A <strong>black hole</strong> is what’s left when a giant star collapses: so much mass squeezed so small that nothing, not even light, can escape its pull. The two in this collision were each roughly 30 times the Sun’s mass, but only about 200 km across.</p>
+      <dl class="mini-facts">
+        <div><dt>Bigger one</dt><dd><span data-f="m1">34.6</span> Suns · <span data-f="d1">204</span> km wide</dd></div>
+        <div><dt>Smaller one</dt><dd><span data-f="m2">30.0</span> Suns · <span data-f="d2">177</span> km wide</dd></div>
+      </dl>
+      <p>They were circling each other, like two dancers holding hands. In the panel, the dark circles with bright rims are the black holes, and the dashed rings are their paths. Drag the slider under the picture to move through time.</p>
+      <p class="hint">“Wave pitch” and “orbits per second” come from the formula. “Distance” and “speed” follow from them using the orbit rules for planets (Kepler’s laws).</p>
+      <div class="row"><button class="btn" type="button" data-show="-0.5,-0.2,40">Show me</button></div>
+    </article>
+
+    <!-- STEP 3 -->
+    <article class="card step-card" id="sound" data-range="-0.2,-0.1">
+      <div class="step-num">STEP 3 OF 6</div>
+      <h2>How it becomes a sound</h2>
+      <p>Moving masses make <strong>gravitational waves</strong>: ripples in space itself. As one passes, it stretches space one way and squeezes it the other way, then switches, once per vibration. In the panel, the curved arms spiralling out are those ripples. Two crests leave for every orbit.</p>
+      <p><strong>LIGO</strong> has two 4 km tubes at right angles, with lasers measuring their lengths. When the ripple from these black holes passed Earth, one tube got slightly longer while the other got shorter, back and forth. The change was about 4 × 10⁻¹⁸ m, roughly 1/400 of the width of a proton. The small L in the corner of the panel shows it, made about 10²⁰ times bigger.</p>
+      <p>LIGO writes down that stretching 4,096 times every second. Those numbers rise and fall 35 to 250 times a second, which is the same rate as sounds we can hear. Send them to a speaker and the speaker moves the same way: <strong>you hear the chirp.</strong></p>
+      <div class="note"><strong>Is it really sound?</strong> No. Sound can’t travel through empty space. These are ripples in space itself, and their frequencies happen to fall in the range human ears can hear. So we can feed the detector data straight into a speaker and hear it, which is what your WAV file does.</div>
+      <div class="row"><button class="btn" type="button" data-show="-0.2,-0.05,40">Show me</button></div>
+    </article>
+
+    <!-- STEP 4 -->
+    <article class="card step-card" id="pitch" data-range="-0.1,0.0185">
+      <div class="step-num">STEP 4 OF 6</div>
+      <h2>Why the pitch rises</h2>
+      <p>The picture under the black holes is <strong>real LIGO data</strong>, the same view as your first plot (<code>plots/19_gw150914_qtransform.png</code>). Time runs left to right and pitch runs bottom to top. Brighter color means a stronger signal. The bright curved streak is the <strong>chirp</strong>. The white dashed line is the formula’s prediction, and the dot is “now”. Tap a sentence to jump there:</p>
+      <ol id="why-list">
+        <li data-t="-0.30">Two black holes, each roughly 30 times the Sun’s mass, were orbiting each other.</li>
+        <li data-t="-0.16">The orbit sends out gravitational waves, which carry energy away.</li>
+        <li data-t="-0.06">Losing energy makes the black holes spiral closer together, and closer orbits are faster.</li>
+        <li data-t="-0.008">Gravitational waves vibrate twice per orbit, so a faster orbit means a higher pitch and a louder signal. That’s the upward sweep.</li>
+        <li data-t="0.024">When the two black holes merge into one, the signal dies away, which is why the streak ends abruptly just after 0.</li>
+      </ol>
+      <p class="quote-src">From the explanation you got when you first ran project 19.</p>
+      <p>In about 0.1 seconds the signal sweeps from about 35 Hz, a low hum, up to about 250–300 Hz, and then it stops. Watch the readouts. In the last tenth of a second the black holes go from about <span data-f="a100">600</span> km apart to touching, and their speed climbs past a third of the speed of light.</p>
+      <div class="row"><button class="btn" type="button" data-show="-0.12,0.03,40">Show me</button></div>
+    </article>
+
+    <!-- STEP 5 -->
+    <article class="card step-card" id="vanish" data-range="0.0185,0.2">
+      <div class="step-num">STEP 5 OF 6</div>
+      <h2>How the sound disappears</h2>
+      <p><strong>They merge.</strong> When the two black holes touch, they become one black hole of <span data-f="final">61.5</span> Suns. It starts out lopsided and wobbly, and for a moment it <strong>“rings” like a struck bell</strong>, at about <span data-f="fring">255</span> Hz.</p>
+      <p><strong>The ringing dies within milliseconds.</strong> A black hole quickly settles into a smooth, round shape, and a smooth round object spinning steadily sends out no waves. Each 4 ms the ringing shrinks to about a third of its size, so after about 0.02 s it’s gone. No waves means nothing for LIGO to record: the chirp stops, and only the hiss is left.</p>
+      <p><strong>Where did the energy go?</strong> The two black holes added up to <span data-f="total">64.5</span> Suns, but the new one is only <span data-f="final">61.5</span>. About <span data-f="lost">3.0</span> Suns’ worth of mass was turned into gravitational-wave energy and carried away by the ripples.</p>
+      <div class="note">Use <strong>250× slower</strong> to see the last moments: the two become one, wobble, and go still. The spiral waves keep moving outward afterwards. That’s the last ripple leaving, on its 1.3-billion-year trip to Earth.</div>
+      <div class="row"><button class="btn" type="button" data-show="-0.02,0.07,250">Show me</button></div>
+    </article>
+  </div>
+</div>
+
+<!-- ======================= STEP 6 ======================= -->
+<section id="quiz">
+  <div class="section-head">
+    <div class="step-num">STEP 6 OF 6</div>
+    <h2>Check your understanding</h2>
+    <p class="hint">Pick an answer to see whether it’s right and why.</p>
+  </div>
+  <div class="card quiz" id="quiz-box"></div>
+  <div class="answer-box">
+    <div class="eyebrow">The answer to question 19</div>
+    <p>In LIGO’s Livingston detector, the first black-hole collision sounded like <strong>a short, rising “whoop”</strong>. Over about 0.2 seconds it slid up from a low hum near 35 Hz to about 250 Hz, getting louder as it went, and then <strong>stopped dead</strong>. All of it was buried in a steady hiss of detector noise.</p>
+    <p>The rise in pitch is the two black holes spiralling closer and orbiting faster. The sudden stop is the merger: they became one black hole that rang for a few milliseconds and then went quiet.</p>
+  </div>
+</section>
+
+<!-- ======================= SONGS ======================= -->
+<section id="songs">
+  <div class="section-head">
+    <div class="eyebrow">Keep exploring</div>
+    <h2>Two songs made from every collision since</h2>
+    <div class="prose"><p>GW150914 was only the first. LIGO, Virgo and KAGRA have kept catching collisions ever since, and the catalog lists hundreds. In your earlier session we turned them into two songs.</p></div>
+  </div>
+
+  <div class="card" id="collisions">
+    <div class="eyebrow">Song 1 · plots/19_song_of_collisions.wav · 1 min 47 s</div>
+    <h3>Song of the collisions: 282 mergers as model chirps</h3>
+    <div class="prose">
+      <p>One chirp for each of the 282 collisions whose masses have been measured, in the order they were detected from 2015 to 2025. <strong>These are not the detector recordings.</strong> Most real recordings are buried in noise and would just sound like hiss. Each chirp is a <strong>model computed from that collision’s real measured masses</strong>, using the same textbook formula as the animation above. Every pitch is raised two octaves so laptop speakers can play it. The clock only runs while the detectors were switched on: one soft tick is one week of listening, and a bell marks each new observing run.</p>
+    </div>
+    <div>
+      <p class="small" style="margin-bottom:8px"><strong>Hear the pattern:</strong> heavier pairs give a short, low “thump”. Lighter pairs give a long, rising whistle. Tap one to play its model chirp on its own:</p>
+      <div class="trio" id="trio"></div>
+    </div>
+    <div class="player-bar">
+      <button class="btn primary" id="col-play" type="button"><svg viewBox="0 0 14 14" aria-hidden="true"><path d="M3 1.5v11l9-5.5z" fill="currentColor"/></svg><span>Play the song</span></button>
+      <input type="range" id="col-scrub" min="0" max="106.8" step="0.1" value="0" aria-label="Position in the song">
+      <span class="time-readout" id="col-time">0:00 / 1:47</span>
+    </div>
+    <div class="err" id="col-err" hidden></div>
+    <div class="legend" id="col-legend"></div>
+    <div class="score-wrap" id="score-wrap"><svg id="score" viewBox="0 0 1000 430" role="img" aria-label="Score of the song: each dot is one merger's chirp, placed at when it plays and the pitch it ends on"></svg><div class="tooltip" id="tip" hidden></div></div>
+    <p class="hint">Each dot is one chirp. Left to right is when it plays, and higher means a higher final note. Bigger dots are louder, meaning clearer detections. Shaded bands are observing runs. Click a dot to see it below.</p>
+    <div class="now">
+      <div class="now-panel" aria-live="polite"><div class="lbl">Playing now</div><div class="name" id="col-now-name">–</div><div class="desc" id="col-now-desc">Press play. The song starts with ticking, and GW150914 is the first chirp, at about 3 s.</div></div>
+      <div class="now-panel"><div class="lbl">Selected</div><div class="name" id="col-sel-name">GW170817</div><div class="desc" id="col-sel-desc"></div><div class="row"><button class="btn" type="button" id="col-sel-play">Play this chirp alone</button><button class="btn" type="button" id="col-sel-jump">Jump the song here</button></div></div>
+    </div>
+  </div>
+
+  <div class="card" id="real">
+    <div class="eyebrow">Song 2 · plots/19_real_recordings_song.wav · 4 min 33 s</div>
+    <h3>Song of real recordings: 91 collisions, straight from the detector</h3>
+    <div class="prose">
+      <p>This one is real data, not a model. Every collision with a small data file gets exactly the same treatment as GW150914 in step 1: 3 seconds, merger at the 2-second beat. Most collisions are too faint to stand out in a single detector, so many clips are just hiss. The loud ones are clearly audible. Higher “signal-to-noise” means the collision stood out more clearly from the noise. GW150914’s is 26.</p>
+    </div>
+    <div class="player-bar">
+      <button class="btn primary" id="real-song-play" type="button"><svg viewBox="0 0 14 14" aria-hidden="true"><path d="M3 1.5v11l9-5.5z" fill="currentColor"/></svg><span>Play the song</span></button>
+      <input type="range" id="real-scrub" min="0" max="273" step="0.1" value="0" aria-label="Position in the song">
+      <span class="time-readout" id="real-time">0:00 / 4:33</span>
+    </div>
+    <div class="row">
+      <div class="chips" role="group" aria-label="Pitch" data-rate-for="real">
+        <button type="button" data-rate="1" aria-pressed="true">Real pitch</button>
+        <button type="button" data-rate="2" aria-pressed="false">2× higher</button>
+        <button type="button" data-rate="4" aria-pressed="false">4× higher</button>
+      </div>
+      <span class="hint">Jump to the clearest ones:</span>
+      <div class="picks" id="picks"></div>
+    </div>
+    <div class="err" id="real-err" hidden></div>
+    <div class="real-now">
+      <div class="listen-figure">
+        <div class="fig-label">NOW PLAYING: REAL LIGO DATA, 2 S BEFORE TO 1 S AFTER THE MERGER</div>
+        <canvas id="cv-real" aria-label="Spectrogram and waveform of the clip that is playing"></canvas>
+      </div>
+      <div class="now-panel" aria-live="polite"><div class="lbl" id="real-k">Clip 1 of 91</div><div class="name" id="real-name">GW150914</div><div class="desc" id="real-desc"></div></div>
+    </div>
+    <div class="tiles" id="tiles" aria-label="All 91 clips in song order. Click one to play it."></div>
+  </div>
+</section>
+
+<section id="words">
+  <div class="section-head"><div class="eyebrow">Words to know</div><h2>Glossary</h2></div>
+  <dl class="glossary">
+    <div><dt>Black hole</dt><dd>What’s left when a giant star collapses: so much mass in so small a space that nothing, not even light, escapes.</dd></div>
+    <div><dt>Gravitational wave</dt><dd>A ripple in space itself, made by moving masses. It stretches and squeezes everything it passes through, by a tiny amount.</dd></div>
+    <div><dt>LIGO</dt><dd>Two detectors in the US (Livingston, Louisiana and Hanford, Washington). Each has two 4 km arms, with lasers measuring changes in their lengths.</dd></div>
+    <div><dt>Hz (hertz)</dt><dd>Vibrations per second. Human hearing runs from about 20 Hz (deep bass) to 20,000 Hz.</dd></div>
+    <div><dt>Chirp</dt><dd>A signal that rises in pitch, like a bird’s chirp. The rise is the black holes orbiting faster as they spiral in.</dd></div>
+    <div><dt>Merger and ringdown</dt><dd>The moment two black holes become one, then the brief “bell ringing” as the new black hole settles down.</dd></div>
+    <div><dt>Spectrogram</dt><dd>A picture of sound: time left to right, pitch bottom to top, brightness = how strong.</dd></div>
+    <div><dt>Signal-to-noise ratio</dt><dd>How strongly a signal stands out from the detector’s noise. Bigger is clearer.</dd></div>
+  </dl>
+</section>
+
+<footer>
+  <strong>Where this comes from</strong>
+  <ul>
+    <li>Data: LIGO Scientific Collaboration, Virgo Collaboration and KAGRA Collaboration, via the Gravitational Wave Open Science Center (GWOSC), <a href="https://gwosc.org" target="_blank" rel="noopener">gwosc.org</a>. Masses, distances and signal-to-noise ratios come from the GWTC event catalog.</li>
+    <li>Sounds: <code>plots/19_gw150914_livingston.wav</code> (from <code>starters/19_hear_a_merger.py</code>), <code>plots/19_song_of_collisions.wav</code> and <code>plots/19_real_recordings_song.wav</code> (from the scripts in <code>project19/</code>). The real recordings are played here as 16-bit copies so every browser can play them.</li>
+    <li>Pictures: Q-transform spectrograms made with gwpy, colour scale 0–25 “normalized energy”, as in the gallery. Prepared by <code>project19/export_for_web.py</code>.</li>
+    <li>Animation and readouts: leading-order (“textbook”) inspiral formula with the catalog masses, lined up with the loudest moment of the real data (+0.018 s). The ringdown uses the standard formula for the new black hole’s ring, assuming a typical spin. These are approximations, most of all in the last few milliseconds.</li>
+  </ul>
+</footer>
+</div>
+
+<script>
+'use strict';
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+let D = null;
+
+/* ------------------------------------------------------------------ theme tokens for canvas text */
+const TOK = {};
+function readTokens() {
+  const cs = getComputedStyle(document.documentElement);
+  for (const k of ['ink', 'ink-2', 'muted', 'line', 'surface', 'surface-2', 'accent', 'kind-bbh', 'kind-nsbh', 'kind-bns']) TOK[k] = cs.getPropertyValue('--' + k).trim();
+}
+readTokens();
+const redrawers = [];
+function redrawAll() { readTokens(); redrawers.forEach(f => f()); }
+try { matchMedia('(prefers-color-scheme: dark)').addEventListener('change', redrawAll); } catch (e) {}
+new MutationObserver(redrawAll).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+
+function fitCanvas(cv) {
+  const r = cv.getBoundingClientRect();
+  const dpr = Math.min(2, window.devicePixelRatio || 1);
+  const W = Math.max(1, Math.round(r.width * dpr)), H = Math.max(1, Math.round(r.height * dpr));
+  if (cv.width !== W || cv.height !== H) { cv.width = W; cv.height = H; }
+  const c = cv.getContext('2d');
+  c.setTransform(dpr, 0, 0, dpr, 0, 0);
+  return { c, w: r.width, h: r.height };
+}
+function loadImage(src) {
+  return new Promise((res, rej) => { const im = new Image(); im.onload = () => res(im); im.onerror = () => rej(new Error('could not load ' + src)); im.src = src; });
+}
+const mmss = s => { s = Math.max(0, s); const m = Math.floor(s / 60); return m + ':' + String(Math.floor(s % 60)).padStart(2, '0'); };
+
+/* ------------------------------------------------------------------ audio */
+const AC = window.AudioContext || window.webkitAudioContext;
+let actx = null, out = null;
+function audio() {
+  if (!actx) {
+    try { actx = new AC({ sampleRate: 22050 }); } catch (e) { actx = new AC(); }
+    out = actx.createGain(); out.gain.value = 0.9; out.connect(actx.destination);
+  }
+  return actx;
+}
+function decode(ab) {
+  const c = audio();
+  return new Promise((res, rej) => { const p = c.decodeAudioData(ab, res, rej); if (p && p.catch) p.catch(rej); });
+}
+const PLAYERS = [];
+let synthSrc = null;
+function stopSynth() { if (synthSrc) { try { synthSrc.stop(); } catch (e) {} synthSrc = null; } }
+
+class Player {
+  constructor(url) { this.url = url; this.buf = null; this.src = null; this.offset = 0; this.t0 = 0; this.rate = 1; this.playing = false; this.fns = []; PLAYERS.push(this); }
+  load() {
+    if (!this._p) {
+      this._p = fetch(this.url).then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.arrayBuffer(); })
+        .then(decode).then(b => { this.buf = b; this.emit(); return b; });
+      this._p.catch(e => { this.error = e; this.emit(); });
+    }
+    return this._p;
+  }
+  get duration() { return this.buf ? this.buf.duration : 0; }
+  get time() { return this.playing ? Math.min(this.duration, this.offset + (actx.currentTime - this.t0) * this.rate) : this.offset; }
+  on(f) { this.fns.push(f); }
+  emit() { this.fns.forEach(f => f(this)); }
+  async play(from) {
+    const c = audio();
+    if (c.state === 'suspended') { try { await c.resume(); } catch (e) {} }
+    await this.load();
+    PLAYERS.forEach(p => { if (p !== this) p.pause(); });
+    stopSynth();
+    if (from == null) from = this.time;
+    this._stop();
+    this.offset = from >= this.duration - 0.02 ? 0 : Math.max(0, from);
+    const s = c.createBufferSource();
+    s.buffer = this.buf; s.playbackRate.value = this.rate; s.connect(out);
+    s.start(0, this.offset);
+    this.t0 = c.currentTime; this.src = s; this.playing = true;
+    s.onended = () => { if (this.src === s) { this.offset = this.duration; this.src = null; this.playing = false; this.emit(); } };
+    this.emit();
+  }
+  _stop() { const s = this.src; this.src = null; if (s) { s.onended = null; try { s.stop(); } catch (e) {} } }
+  pause() { if (!this.playing) return; this.offset = this.time; this._stop(); this.playing = false; this.emit(); }
+  toggle() { return this.playing ? this.pause() : this.play(); }
+  seek(t) { t = Math.max(0, Math.min(this.duration || t, t)); if (this.playing) this.play(t); else { this.offset = t; this.emit(); } }
+  setRate(r) { const was = this.playing, t = this.time; if (was) this.pause(); this.rate = r; if (was) this.play(t); else this.emit(); }
+}
+const gw = new Player('audio/gw150914.wav');
+const colSong = new Player('audio/song_of_collisions.wav');
+const realSong = new Player('audio/real_recordings_song.wav');
+
+function setPlayButton(btn, playing, label) {
+  btn.querySelector('span').textContent = playing ? 'Pause' : label;
+  btn.querySelector('svg').innerHTML = playing ? '<path d="M3 2h3v10H3zM8 2h3v10H8z" fill="currentColor"/>' : '<path d="M3 1.5v11l9-5.5z" fill="currentColor"/>';
+}
+function showErr(el, p) { if (p.error) { el.hidden = false; el.textContent = 'Couldn’t load this sound (' + p.error.message + '). Reload the page to try again.'; } }
+$$('[data-rate-for]').forEach(group => {
+  const p = group.dataset.rateFor === 'gw' ? gw : realSong;
+  group.addEventListener('click', e => {
+    const b = e.target.closest('button[data-rate]'); if (!b) return;
+    $$('button', group).forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+    p.setRate(Number(b.dataset.rate));
+  });
+});
+
+/* ------------------------------------------------------------------ physics of the merger (model) */
+// Textbook (leading-order) inspiral, using the GWOSC catalog masses for GW150914.
+const T_SUN = 4.925e-6;          // the Sun's mass as a time, G*M_sun/c^3, in seconds
+const GM_SUN = 1.32712e11;       // G * M_sun in km^3/s^2
+const C_KM = 299792.458;         // speed of light, km/s
+const RS_KM = 2.953;             // a black hole's radius per Sun of mass (Schwarzschild), km
+let P = null;                    // filled in once the data arrives
+function buildPhysics(g) {
+  const z = g.redshift, Mt = g.total, m1 = g.m1, m2 = g.m2;
+  const TM = T_SUN * g.chirp_mass * (1 + z);              // chirp mass as heard, as a time
+  const tm = g.merger_offset;                              // merger moment (s from the catalog time)
+  const fOfTau = tau => Math.pow(5 / (256 * tau), 3 / 8) * Math.pow(TM, -5 / 8) / Math.PI;
+  const tauOfF = f => 5 / 256 * Math.pow(Math.PI * f, -8 / 3) * Math.pow(TM, -5 / 3);
+  const phaseOfTau = tau => -2 * Math.pow(tau / (5 * TM), 5 / 8);   // wave phase in radians
+  const r1 = RS_KM * m1, r2 = RS_KM * m2;
+  const aTouch = r1 + r2;                                  // they touch when the edges meet
+  const fTouch = Math.sqrt(GM_SUN * Mt / Math.pow(aTouch, 3)) / Math.PI / (1 + z);
+  const tauTouch = tauOfF(fTouch), tTouch = tm - tauTouch, phiTouch = phaseOfTau(tauTouch);
+  const fRing = 0.5349 / (2 * Math.PI * T_SUN * g.final * (1 + z));   // the new black hole's "ring"
+  const tauRing = 3.29 / (Math.PI * fRing);
+  function at(t) {
+    if (t < tTouch) {
+      const tau = tm - t, f = fOfTau(tau), w = Math.PI * f * (1 + z);
+      const a = Math.cbrt(GM_SUN * Mt / (w * w));
+      return { merged: false, f, a, phase: phaseOfTau(tau), amp: Math.pow(f / fTouch, 2 / 3), v: w * a * m2 / Mt, tau };
+    }
+    const dt = t - tTouch;
+    return { merged: true, f: fRing, a: 0, phase: phiTouch + 2 * Math.PI * fRing * dt, amp: Math.exp(-dt / tauRing), dt, tau: tm - t };
+  }
+  return { at, tm, tTouch, fTouch, fRing, tauRing, r1, r2, rf: RS_KM * g.final, m1, m2, Mt, aMax: at(-0.5).a, z };
+}
+
+/* ------------------------------------------------------------------ the observatory (steps 2-5) */
+const S = { t: -0.3, slow: false, factor: 40, until: 0.2, last: 0 };
+const cvSpace = $('#cv-space'), cvZoom = $('#cv-zoom'), scrub = $('#scrub');
+const STARS = Array.from({ length: 140 }, (_, i) => { const r = Math.sin(i * 12.9898) * 43758.5453; const q = Math.sin(i * 78.233) * 12345.678; return [r - Math.floor(r), q - Math.floor(q), (i % 7 === 0) ? 1.3 : 0.7]; });
+let zoomImg = null;
+
+function drawScene(cv, t, hero) {
+  if (!P) return;
+  const { c, w, h } = fitCanvas(cv);
+  c.fillStyle = '#04050b'; c.fillRect(0, 0, w, h);
+  if (hero) {   // a faint purple haze behind the pair
+    const hz = c.createRadialGradient(w / 2, h / 2, 0, w / 2, h / 2, w / 2);
+    hz.addColorStop(0, 'rgba(123,79,214,0.22)'); hz.addColorStop(1, 'rgba(123,79,214,0)');
+    c.fillStyle = hz; c.fillRect(0, 0, w, h);
+  }
+  for (const [x, y, s] of STARS) { c.fillStyle = 'rgba(215,222,234,' + (s > 1 ? 0.55 : 0.28) + ')'; c.fillRect(x * w, y * h, s, s); }
+  const cx = w * 0.5, cy = h * 0.5, R = Math.min(w, h) / 2;
+  const k = (R * (hero ? 0.5 : 0.9)) / (P.aMax * P.m1 / P.Mt + P.r2);    // pixels per km
+  const st = P.at(t);
+
+  // spiral gravitational waves: crests leave along the line joining the two black holes
+  const Rmax = Math.hypot(w, h) / 2, V = Rmax / 0.06;      // drawn speed: the panel holds 0.06 s of waves
+  const r0 = st.merged ? P.rf * k * 1.3 : (st.a * P.m1 / P.Mt + P.r2) * k * 1.15;
+  c.lineCap = 'round';
+  for (let arm = 0; arm < 2; arm++) {
+    let px = null, py = null;
+    for (let r = r0; r < Rmax; r += 3) {
+      const e = P.at(t - r / V);
+      const th = e.phase / 2 + arm * Math.PI;
+      const x = cx + r * Math.cos(th), y = cy + r * Math.sin(th);
+      if (px !== null) {
+        const a = Math.min(1, (hero ? 0.3 : 0.12) + 0.95 * e.amp) * (1 - 0.55 * r / Rmax);
+        c.strokeStyle = (e.amp > 0.55 ? 'rgba(253,231,37,' : 'rgba(83,224,208,') + a.toFixed(3) + ')';
+        c.lineWidth = 1 + 2.2 * e.amp;
+        c.beginPath(); c.moveTo(px, py); c.lineTo(x, y); c.stroke();
+      }
+      px = x; py = y;
+    }
+  }
+
+  function hole(x, y, rad, label, wob = 0, ang = 0) {
+    const g = c.createRadialGradient(x, y, rad * 0.8, x, y, rad * 2.4);
+    g.addColorStop(0, 'rgba(255,196,110,0.35)'); g.addColorStop(1, 'rgba(255,196,110,0)');
+    c.fillStyle = g; c.beginPath(); c.arc(x, y, rad * 2.4, 0, 2 * Math.PI); c.fill();
+    c.save(); c.translate(x, y); c.rotate(ang);
+    c.beginPath(); c.ellipse(0, 0, rad * (1 + wob), rad * (1 - wob), 0, 0, 2 * Math.PI);
+    c.fillStyle = '#000'; c.fill(); c.lineWidth = 1.6; c.strokeStyle = '#ffd38a'; c.stroke(); c.restore();
+    if (label) { c.fillStyle = '#d7deea'; c.font = '500 11px "IBM Plex Mono", monospace'; c.textAlign = 'center'; c.fillText(label, x, y + rad * (1 + Math.abs(wob)) + 15); }
+  }
+  if (!st.merged) {
+    const th = st.phase / 2, d1 = st.a * P.m2 / P.Mt * k, d2 = st.a * P.m1 / P.Mt * k;
+    c.setLineDash([3, 5]); c.strokeStyle = 'rgba(135,146,166,0.45)'; c.lineWidth = 1;
+    c.beginPath(); c.arc(cx, cy, d1, 0, 2 * Math.PI); c.stroke();
+    c.beginPath(); c.arc(cx, cy, d2, 0, 2 * Math.PI); c.stroke(); c.setLineDash([]);
+    hole(cx + d1 * Math.cos(th), cy + d1 * Math.sin(th), P.r1 * k, P.m1 + ' Suns');
+    hole(cx - d2 * Math.cos(th), cy - d2 * Math.sin(th), P.r2 * k, P.m2 + ' Suns');
+  } else {
+    const wob = 0.22 * st.amp * Math.cos(2 * Math.PI * P.fRing * st.dt);
+    hole(cx, cy, P.rf * k, D.gw150914.final + ' Suns', wob, st.phase / 2);
+  }
+
+  if (hero) return;
+  // LIGO's arms (bottom right), stretched by the passing wave, exaggerated about 10^20 times
+  const strain = st.amp * Math.cos(st.phase);
+  const box = Math.min(118, w * 0.26), bx = w - box - 10, by = h - box - 10;
+  c.fillStyle = 'rgba(4,6,12,0.82)'; c.strokeStyle = 'rgba(135,146,166,0.35)'; c.lineWidth = 1;
+  c.beginPath(); c.roundRect ? c.roundRect(bx, by, box, box, 6) : c.rect(bx, by, box, box); c.fill(); c.stroke();
+  const ox = bx + 18, oy = by + box - 26, L = box * 0.58, e = 0.18 * strain;
+  c.strokeStyle = '#d7deea'; c.lineWidth = 3;
+  c.beginPath(); c.moveTo(ox, oy); c.lineTo(ox + L * (1 + e), oy); c.moveTo(ox, oy); c.lineTo(ox, oy - L * (1 - e)); c.stroke();
+  c.fillStyle = '#ffd38a';
+  c.fillRect(ox + L * (1 + e) - 2, oy - 5, 4, 10); c.fillRect(ox - 5, oy - L * (1 - e) - 2, 10, 4);
+  c.fillStyle = '#8792a6'; c.font = '500 9.5px "IBM Plex Mono", monospace'; c.textAlign = 'left';
+  c.fillText('LIGO arms', bx + 8, by + 14); c.fillText('(×10²⁰)', bx + 8, by + 26);
+
+  // time stamp (top left)
+  c.fillStyle = '#d7deea'; c.font = '500 12px "IBM Plex Mono", monospace'; c.textAlign = 'left';
+  c.fillText((t >= 0 ? '+' : '−') + Math.abs(t).toFixed(3) + ' s', 12, 20);
+  c.fillStyle = '#8792a6'; c.font = '400 10.5px "IBM Plex Mono", monospace';
+  c.fillText(S.slow ? ('slow motion, ' + S.factor + '× slower') : (gw.playing ? 'real speed' : 'paused'), 12, 35);
+}
+
+function drawSpace() { drawScene(cvSpace, S.t, false); }
+
+/* the hero: the same model, looping on its own in slow motion */
+const cvHero = $('#cv-hero');
+const HERO = { t: -0.34, last: 0, hold: 0, visible: true, still: matchMedia('(prefers-reduced-motion: reduce)').matches };
+function drawHero() { drawScene(cvHero, HERO.still ? -0.012 : HERO.t, true); }
+redrawers.push(drawHero);
+try { new IntersectionObserver(es => { HERO.visible = es[0].isIntersecting; }).observe(cvHero); } catch (e) {}
+function stepHero(now) {
+  const dt = Math.min(0.1, (now - (HERO.last || now)) / 1000); HERO.last = now;
+  if (HERO.still || !HERO.visible || document.hidden) return;
+  if (HERO.hold > 0) { HERO.hold -= dt; if (HERO.hold <= 0) HERO.t = -0.34; }
+  else { HERO.t += dt / 40; if (HERO.t >= 0.09) { HERO.t = 0.09; HERO.hold = 1.4; } }
+  drawHero();
+}
+
+function drawZoom() {
+  if (!P) return;
+  const { c, w, h } = fitCanvas(cvZoom);
+  const g = D.gw150914, [t0, t1] = g.zoom;
+  const m = { l: 38, r: 8, t: 6, b: 30 }, pw = w - m.l - m.r, ph = h - m.t - m.b;
+  const X = t => m.l + (t - t0) / (t1 - t0) * pw;
+  const Y = f => m.t + (1 - Math.log(f / g.f_low) / Math.log(g.f_high / g.f_low)) * ph;
+  c.clearRect(0, 0, w, h);
+  if (zoomImg) { c.imageSmoothingEnabled = true; c.drawImage(zoomImg, m.l, m.t, pw, ph); } else { c.fillStyle = TOK['surface-2']; c.fillRect(m.l, m.t, pw, ph); }
+  // axes
+  c.fillStyle = TOK.muted; c.font = '10.5px "IBM Plex Mono", monospace'; c.textAlign = 'right'; c.textBaseline = 'middle';
+  for (const f of [20, 50, 100, 200, 500]) { c.fillText(String(f), m.l - 5, Y(f)); c.fillStyle = 'rgba(255,255,255,0.18)'; c.fillRect(m.l, Math.round(Y(f)), pw, 1); c.fillStyle = TOK.muted; }
+  c.textBaseline = 'top';
+  for (let i = 0; i <= 7; i++) {
+    const t = -0.5 + i * 0.1;
+    c.textAlign = i === 0 ? 'left' : i === 7 ? 'right' : 'center';
+    c.fillText((t > 0.0001 ? '+' : '') + t.toFixed(1) + (i === 7 ? ' s' : ''), X(t), h - m.b + 5);
+  }
+  // a small legend inside the picture
+  c.font = '500 10px "IBM Plex Mono", monospace'; c.textAlign = 'left'; c.textBaseline = 'middle';
+  const lg = 'real LIGO data · pitch in Hz · - - formula';
+  const lw = c.measureText(lg).width + 12;
+  c.fillStyle = 'rgba(4,5,11,0.72)'; c.fillRect(w - m.r - lw - 4, m.t + 4, lw, 18);
+  c.fillStyle = '#edf0fa'; c.fillText(lg, w - m.r - lw + 2, m.t + 13);
+  // the formula's prediction
+  c.setLineDash([5, 4]); c.strokeStyle = 'rgba(255,255,255,0.9)'; c.lineWidth = 1.4; c.beginPath();
+  let first = true;
+  for (let t = t0; t < P.tTouch; t += 0.0004) { const f = P.at(t).f; if (f < g.f_low) continue; const x = X(t), y = Y(Math.min(f, g.f_high)); first ? c.moveTo(x, y) : c.lineTo(x, y); first = false; }
+  c.stroke(); c.setLineDash([]);
+  // now
+  const st = P.at(S.t), x = X(S.t);
+  c.fillStyle = 'rgba(255,255,255,0.55)'; c.fillRect(Math.round(x) - 0.5, m.t, 1, ph);
+  if (!st.merged || st.amp > 0.03) {
+    const y = Y(Math.max(g.f_low, Math.min(g.f_high, st.f)));
+    c.shadowColor = 'rgba(253,231,37,0.9)'; c.shadowBlur = 14;
+    c.beginPath(); c.arc(x, y, 6, 0, 2 * Math.PI); c.fillStyle = '#fde725'; c.fill(); c.shadowBlur = 0;
+    c.lineWidth = 2; c.strokeStyle = '#05060d'; c.stroke();
+  }
+}
+
+const fmtInt = new Intl.NumberFormat('en-US');
+const steps = [
+  { id: 'meet', test: t => t < -0.2 },
+  { id: 'sound', test: t => t >= -0.2 && t < -0.1 },
+  { id: 'pitch', test: t => t >= -0.1 && t < P.tTouch },
+  { id: 'vanish', test: t => t >= P.tTouch },
+];
+const whyLis = $$('#why-list li');
+function updateReadouts() {
+  if (!P) return;
+  const st = P.at(S.t);
+  const rel = S.t - P.tm;
+  $('#st-when').innerHTML = '<b>' + (S.t >= 0 ? '+' : '−') + Math.abs(S.t).toFixed(3) + ' s</b> · ' +
+    (rel < 0 ? Math.round(-rel * 1000) + ' ms before the merger' : (rel < 0.0005 ? 'merging' : Math.round(rel * 1000) + ' ms after the merger'));
+  let what;
+  if (!st.merged) what = st.tau > 0.1 ? 'Two black holes orbiting each other' : st.tau > 0.02 ? 'Spiralling closer, faster and faster' : 'The final plunge';
+  else what = st.amp > 0.05 ? 'One black hole, ringing like a bell' : 'Settled and silent: no more waves';
+  $('#st-what').textContent = what;
+  if (!st.merged) {
+    $('#ro-f').innerHTML = Math.round(st.f) + '<small>Hz</small>';
+    $('#ro-orb').textContent = Math.round(st.f / 2);
+    $('#ro-a').innerHTML = fmtInt.format(Math.round(st.a)) + '<small>km</small>';
+    $('#ro-v').innerHTML = Math.round(100 * st.v / C_KM) + '<small>% of light</small>';
+  } else {
+    $('#ro-f').innerHTML = (st.amp > 0.01 ? Math.round(st.f) + '<small>Hz, fading</small>' : '—<small>silent</small>');
+    $('#ro-orb').textContent = '—';
+    $('#ro-a').innerHTML = '0<small>merged</small>';
+    $('#ro-v').innerHTML = '—';
+  }
+  // which explanation sentence is "now"
+  const thresholds = [-Infinity, -0.2 + P.tm, -0.1 + P.tm, -0.02 + P.tm, P.tTouch];
+  let on = 0; thresholds.forEach((th, i) => { if (S.t >= th) on = i; });
+  whyLis.forEach((li, i) => li.classList.toggle('on', i === on));
+  steps.forEach(s => document.getElementById(s.id).classList.toggle('active', s.test(S.t)));
+  if (document.activeElement !== scrub) scrub.value = S.t;
+}
+function renderStage() { drawSpace(); drawZoom(); updateReadouts(); }
+redrawers.push(renderStage);
+
+function setT(t) { S.t = Math.max(-0.5, Math.min(0.2, t)); renderStage(); }
+function stopSlow() { S.slow = false; setPlayButton($('#slow-play'), false, 'Play in slow motion'); }
+function startSlow(from, until, factor) {
+  if (gw.playing) gw.pause();
+  if (factor) setSlowFactor(factor);
+  S.until = until ?? 0.2;
+  if (from != null) S.t = from; else if (S.t >= S.until - 0.002) S.t = -0.3;
+  S.slow = true; S.last = performance.now();
+  setPlayButton($('#slow-play'), true, 'Play in slow motion');
+}
+function setSlowFactor(f) { S.factor = f; $$('#slow-chips button').forEach(b => b.setAttribute('aria-pressed', String(Number(b.dataset.slow) === f))); }
+$('#slow-play').addEventListener('click', () => S.slow ? stopSlow() : startSlow());
+$('#slow-chips').addEventListener('click', e => { const b = e.target.closest('button[data-slow]'); if (b) setSlowFactor(Number(b.dataset.slow)); });
+scrub.addEventListener('input', () => { stopSlow(); if (gw.playing) gw.pause(); setT(Number(scrub.value)); });
+$('#real-play').addEventListener('click', () => { stopSlow(); gw.play(0); });
+whyLis.forEach(li => li.addEventListener('click', () => { stopSlow(); if (gw.playing) gw.pause(); setT(Number(li.dataset.t)); }));
+$$('[data-show]').forEach(b => b.addEventListener('click', () => {
+  const [a, z, f] = b.dataset.show.split(',').map(Number);
+  startSlow(a, z, f);
+  if (window.matchMedia('(max-width: 900px)').matches) $('.observatory').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}));
+function zoomSeek(e) {
+  const r = cvZoom.getBoundingClientRect(), [t0, t1] = D.gw150914.zoom;
+  const pw = r.width - 38 - 8;
+  stopSlow(); if (gw.playing) gw.pause();
+  setT(t0 + (e.clientX - r.left - 38) / pw * (t1 - t0));
+}
+cvZoom.addEventListener('pointerdown', e => { zoomSeek(e); cvZoom.setPointerCapture(e.pointerId); });
+cvZoom.addEventListener('pointermove', e => { if (e.buttons) zoomSeek(e); });
+
+/* ------------------------------------------------------------------ step 1: listening */
+const cvListen = $('#cv-listen');
+let fullImg = null;
+function drawListen() {
+  if (!D) return;
+  const { c, w, h } = fitCanvas(cvListen);
+  const g = D.gw150914, top = h * 0.42, gap = 8;
+  const X = t => (t - g.clip_start) / (g.clip_end - g.clip_start) * w;   // t in s from the catalog time
+  c.clearRect(0, 0, w, h);
+  c.fillStyle = 'rgba(0,0,0,0.35)'; c.fillRect(0, 0, w, top);
+  // waveform (the real samples)
+  if (gw.buf) {
+    const d = gw.buf.getChannelData(0), n = d.length, mid = top / 2;
+    let peak = 0; for (let i = 0; i < n; i++) peak = Math.max(peak, Math.abs(d[i]));
+    c.fillStyle = TOK.accent;
+    for (let x = 0; x < w; x++) {
+      const i0 = Math.floor(x / w * n), i1 = Math.max(i0 + 1, Math.floor((x + 1) / w * n));
+      let lo = 1, hi = -1; for (let i = i0; i < i1; i++) { if (d[i] < lo) lo = d[i]; if (d[i] > hi) hi = d[i]; }
+      c.fillRect(x, mid - hi / peak * mid * 0.92, 1, Math.max(1, (hi - lo) / peak * mid * 0.92));
+    }
+  } else { c.fillStyle = TOK.muted; c.font = '12px "IBM Plex Sans", sans-serif'; c.fillText(gw.error ? 'Sound file did not load.' : 'Loading the recording…', 10, 20); }
+  // spectrogram of the same 3 s
+  if (fullImg) c.drawImage(fullImg, 0, top + gap, w, h - top - gap);
+  // merger marker
+  const xm = X(g.merger_offset);
+  c.fillStyle = '#fde725'; c.fillRect(Math.round(xm), 0, 1, top);
+  c.font = '500 10.5px "IBM Plex Mono", monospace'; c.textAlign = 'right'; c.fillText('merger', xm - 4, 12);
+  c.fillStyle = TOK.muted; c.textAlign = 'left';
+  for (const t of [-2, -1, 0]) { c.fillText((t > 0 ? '+' : '') + t + ' s', X(t) + 3, top - 4); }
+  // playhead
+  const tNow = g.clip_start + gw.time;
+  c.fillStyle = '#fde725'; c.shadowColor = 'rgba(253,231,37,0.8)'; c.shadowBlur = 8;
+  c.fillRect(Math.round(X(tNow)) - 1, 0, 2, h); c.shadowBlur = 0;
+  $('#listen-time').textContent = gw.time.toFixed(2) + ' / 3.00 s';
+}
+redrawers.push(drawListen);
+$('#listen-play').addEventListener('click', () => { stopSlow(); gw.toggle(); });
+cvListen.addEventListener('click', e => { const r = cvListen.getBoundingClientRect(); stopSlow(); gw.seek((e.clientX - r.left) / r.width * 3); });
+gw.on(p => { setPlayButton($('#listen-play'), p.playing, 'Play the recording'); $('#real-play').textContent = p.playing ? 'Playing at real speed…' : 'Hear it at real speed'; showErr($('#listen-err'), p); drawListen(); });
+
+/* ------------------------------------------------------------------ quiz */
+const QUIZ = [
+  { q: 'What is LIGO actually measuring?', opts: ['Sound waves travelling through space', 'Tiny stretching and squeezing of its two 4 km arms', 'Light given off by the black holes'], a: 1,
+    why: 'A passing gravitational wave stretches one arm while squeezing the other, by about 1/400 of a proton’s width. Space carries no sound, and black holes give off no light.' },
+  { q: 'Why does the pitch of the chirp go up?', opts: ['The black holes grow bigger', 'The waves speed up as they reach Earth', 'The black holes spiral closer and orbit faster, and the waves vibrate twice per orbit'], a: 2,
+    why: 'Gravitational waves carry energy away, so the orbit shrinks. Closer orbits are faster, and a faster orbit means a higher pitch.' },
+  { q: 'Why does the sound stop so suddenly?', opts: ['The two black holes became one, which rang briefly and then went quiet', 'The detector was switched off', 'The black holes bounced apart'], a: 0,
+    why: 'After the merger there is one black hole. It rings for a few milliseconds while it settles into a smooth round shape, and then it sends out no more waves.' },
+  { q: 'Why is most of the 3-second recording just hiss?', opts: ['The black holes made a hissing noise for 3 seconds', 'It’s detector noise. The chirp itself lasts only about 0.2 seconds', 'The file is damaged'], a: 1,
+    why: 'LIGO is so sensitive that it always picks up noise. The chirp is the short “whoop” about 2 seconds in.' },
+  { q: 'A pair of much heavier black holes would sound like…', opts: ['A longer, higher whistle', 'A shorter, lower “thump”', 'Exactly the same'], a: 1,
+    why: 'Big black holes touch while still orbiting fairly slowly, so the sweep ends at a low pitch, almost before it starts. Try GW190521 in the songs section below.' },
+];
+const answered = new Array(QUIZ.length).fill(null);
+function buildQuiz() {
+  const box = $('#quiz-box'); box.innerHTML = '';
+  QUIZ.forEach((item, qi) => {
+    const div = document.createElement('div'); div.className = 'q';
+    div.innerHTML = '<h3>' + (qi + 1) + '. ' + item.q + '</h3><div class="opts"></div><p class="why" hidden></p>';
+    const opts = $('.opts', div);
+    item.opts.forEach((o, oi) => {
+      const b = document.createElement('button'); b.type = 'button'; b.className = 'opt';
+      b.innerHTML = '<span class="mark">' + 'ABC'[oi] + '</span><span>' + o + '</span>';
+      b.addEventListener('click', () => {
+        answered[qi] = oi;
+        $$('button', opts).forEach((x, xi) => {
+          x.classList.toggle('right', xi === item.a && oi === item.a);
+          x.classList.toggle('wrong', xi === oi && oi !== item.a);
+          $('.mark', x).textContent = (xi === oi) ? (oi === item.a ? '✓' : '✗') : 'ABC'[xi];
+        });
+        const why = $('.why', div); why.hidden = false;
+        why.className = 'why ' + (oi === item.a ? 'right' : 'wrong');
+        why.innerHTML = '<strong>' + (oi === item.a ? 'Right. ' : 'Not quite. ') + '</strong>' + item.why;
+        updateScore();
+      });
+      opts.appendChild(b);
+    });
+    box.appendChild(div);
+  });
+  const sc = document.createElement('p'); sc.className = 'score'; sc.id = 'quiz-score'; box.appendChild(sc); updateScore();
+}
+function updateScore() {
+  const n = answered.filter(a => a !== null).length, right = answered.filter((a, i) => a === QUIZ[i].a).length;
+  $('#quiz-score').textContent = n === 0 ? '5 questions' : (right + ' of ' + n + ' right so far' + (n === QUIZ.length ? (right === QUIZ.length ? '. You can answer question 19.' : '. Revisit the steps above for the ones you missed.') : ''));
+}
+
+/* ------------------------------------------------------------------ song 1: collisions (model) */
+const KIND = { 'two black holes': 'bbh', 'black hole + neutron star': 'nsbh', 'two neutron stars': 'bns' };
+function chirpWave(ev, rate) {
+  // the same model chirp as project19/song_of_collisions.py (pitch raised 2 octaves)
+  const PITCH_UP = 4, F_START = 20, MAX = 3, mt = T_SUN * ev.mc, bh = ev.kind === 'two black holes';
+  const pitch = tau => Math.pow(5 / (256 * tau), 3 / 8) * Math.pow(mt, -5 / 8) / Math.PI;
+  const before = f => 5 / 256 * Math.pow(Math.PI * f, -8 / 3) * Math.pow(mt, -5 / 3);
+  const fEnd = bh ? 0.5349 / (2 * Math.PI * T_SUN * ev.mf) : 1 / (Math.pow(6, 1.5) * Math.PI * T_SUN * ev.mt);
+  const ring = bh ? 3.29 / (Math.PI * fEnd) : 0.005;
+  const tauStart = Math.min(before(F_START), MAX), tauEnd = before(fEnd);
+  const nIn = Math.max(0, Math.floor((tauStart - tauEnd) * rate)), nRing = Math.floor(6 * ring * rate);
+  const outp = new Float32Array(nIn + nRing); let ph = 0, peak = 0;
+  for (let i = 0; i < nIn; i++) { const f = pitch(tauStart - i / rate); ph += 2 * Math.PI * f * PITCH_UP / rate; outp[i] = Math.pow(f / fEnd, 2 / 3) * Math.sin(ph); }
+  for (let j = 0; j < nRing; j++) { ph += 2 * Math.PI * fEnd * PITCH_UP / rate; outp[nIn + j] = Math.exp(-(j / rate) / ring) * Math.sin(ph); }
+  const fade = Math.floor(0.02 * rate);
+  for (let i = 0; i < outp.length; i++) { if (i < fade) outp[i] *= i / fade; peak = Math.max(peak, Math.abs(outp[i])); }
+  for (let i = 0; i < outp.length; i++) outp[i] *= 0.8 / (peak || 1);
+  return outp;
+}
+async function playChirp(ev) {
+  const c = audio(); if (c.state === 'suspended') { try { await c.resume(); } catch (e) {} }
+  PLAYERS.forEach(p => p.pause()); stopSlow(); stopSynth();
+  const data = chirpWave(ev, c.sampleRate);
+  const b = c.createBuffer(1, data.length, c.sampleRate); b.getChannelData(0).set(data);
+  const s = c.createBufferSource(); s.buffer = b; s.connect(out); s.start(); synthSrc = s;
+}
+function describeEvent(ev) {
+  return ev.kind[0].toUpperCase() + ev.kind.slice(1) + ', ' + ev.m1 + ' + ' + ev.m2 + ' Suns · detected ' + ev.date +
+    ' · signal-to-noise ' + ev.snr + (ev.travel_gyr != null ? ' · waves travelled ' + ev.travel_gyr.toFixed(1) + ' billion years' : '');
+}
+let dots = [], selected = null, scoreScale = null;
+function buildScore() {
+  const C = D.collisions, svg = $('#score'), NS = 'http://www.w3.org/2000/svg';
+  const W = 1000, H = 430, m = { l: 52, r: 14, t: 46, b: 34 };
+  const pmin = 180, pmax = 8000;
+  const X = t => m.l + t / C.length * (W - m.l - m.r);
+  const Y = p => m.t + (1 - Math.log(p / pmin) / Math.log(pmax / pmin)) * (H - m.t - m.b);
+  scoreScale = { X, m, W, H };
+  const el = (tag, attrs, parent = svg) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); parent.appendChild(e); return e; };
+  svg.innerHTML = '';
+  for (const run of C.runs) {
+    el('rect', { x: X(run.start), y: m.t, width: X(run.end) - X(run.start), height: H - m.t - m.b, class: 'run-band' });
+    const t1 = el('text', { x: (X(run.start) + X(run.end)) / 2, y: m.t - 22, 'text-anchor': 'middle', class: 'run-label' }); t1.textContent = run.name + ' · ' + run.years;
+    const t2 = el('text', { x: (X(run.start) + X(run.end)) / 2, y: m.t - 8, 'text-anchor': 'middle' }); t2.textContent = run.n + ' mergers';
+  }
+  for (const p of [250, 500, 1000, 2000, 4000]) {
+    el('line', { x1: m.l, x2: W - m.r, y1: Y(p), y2: Y(p), class: 'grid' });
+    const t = el('text', { x: m.l - 6, y: Y(p) + 4, 'text-anchor': 'end' }); t.textContent = p >= 1000 ? (p / 1000) + 'k' : p;
+  }
+  const yl = el('text', { x: 12, y: m.t + (H - m.t - m.b) / 2, transform: 'rotate(-90 12 ' + (m.t + (H - m.t - m.b) / 2) + ')', 'text-anchor': 'middle' }); yl.textContent = 'final note, as played (Hz)';
+  el('line', { x1: m.l, x2: W - m.r, y1: H - m.b, y2: H - m.b, class: 'axis' });
+  for (let s = 0; s <= C.length; s += 15) { const t = el('text', { x: X(s), y: H - m.b + 16, 'text-anchor': 'middle' }); t.textContent = mmss(s); }
+  const sorted = C.events.map((e, i) => ({ e, i })).sort((a, b) => b.e.loud - a.e.loud);
+  dots = new Array(C.events.length);
+  for (const { e, i } of sorted) {
+    const r = 2 + 8 * e.loud * e.loud;
+    dots[i] = el('circle', { cx: X(e.t), cy: Y(e.pitch), r, class: 'dot ' + KIND[e.kind] });
+  }
+  const hits = el('g', {});
+  for (const { e, i } of sorted.slice().reverse()) {
+    const r = 2 + 8 * e.loud * e.loud;
+    const hc = el('circle', { cx: X(e.t), cy: Y(e.pitch), r: r + 5, class: 'hit', tabindex: -1 }, hits);
+    hc.addEventListener('pointerenter', ev => showTip(e, ev));
+    hc.addEventListener('pointermove', ev => showTip(e, ev));
+    hc.addEventListener('pointerleave', () => { $('#tip').hidden = true; });
+    hc.addEventListener('click', () => selectEvent(i));
+  }
+  scoreScale.head = el('line', { x1: X(0), x2: X(0), y1: m.t - 2, y2: H - m.b, class: 'playhead' });
+  $('#col-legend').innerHTML = Object.entries(KIND).map(([k, c]) =>
+    '<span><i style="background:var(--kind-' + c + ')"></i>' + k + ' (' + C.events.filter(e => e.kind === k).length + ')</span>').join('');
+}
+function showTip(e, ev) {
+  const tip = $('#tip'), wrap = $('#score-wrap').getBoundingClientRect();
+  tip.innerHTML = '<b>' + e.name + '</b><br>' + e.kind + ', ' + e.m1 + ' + ' + e.m2 + ' Suns<br>' + e.date + ' · plays at ' + mmss(e.t);
+  tip.hidden = false;
+  const x = ev.clientX - wrap.left + $('#score-wrap').scrollLeft, y = ev.clientY - wrap.top;
+  tip.style.left = Math.min(x + 12, wrap.width - 250 + $('#score-wrap').scrollLeft) + 'px';
+  tip.style.top = Math.max(0, y - 70) + 'px';
+}
+function selectEvent(i) {
+  const e = D.collisions.events[i];
+  if (selected != null && dots[selected]) dots[selected].classList.remove('sel');
+  selected = i; dots[i].classList.add('sel');
+  $('#col-sel-name').textContent = e.name;
+  $('#col-sel-desc').textContent = describeEvent(e) + '. Its chirp lasts ' + (e.dur >= 3 ? 'over 3 s (cut to 3 s in the song)' : e.dur.toFixed(2) + ' s') + ' and ends on ' + Math.round(e.pitch) + ' Hz as played.';
+}
+let colNow = null;
+function updateCollisions() {
+  if (!D || !scoreScale) return;
+  const t = colSong.time, X = scoreScale.X;
+  scoreScale.head.setAttribute('x1', X(t)); scoreScale.head.setAttribute('x2', X(t));
+  if (document.activeElement !== $('#col-scrub')) $('#col-scrub').value = t;
+  $('#col-time').textContent = mmss(t) + ' / ' + mmss(D.collisions.length);
+  // which chirps are sounding now?
+  let latest = null;
+  D.collisions.events.forEach((e, i) => {
+    const on = t >= e.t - e.dur && t <= e.t + 0.25;
+    if (dots[i] && dots[i].classList.contains('on') !== on) dots[i].classList.toggle('on', on);
+    if (on && (latest === null || e.t > D.collisions.events[latest].t)) latest = i;
+  });
+  if (latest !== null && latest !== colNow) {
+    colNow = latest; const e = D.collisions.events[latest];
+    $('#col-now-name').textContent = e.name; $('#col-now-desc').textContent = describeEvent(e);
+  }
+}
+$('#col-play').addEventListener('click', () => { stopSlow(); colSong.toggle(); });
+$('#col-scrub').addEventListener('input', e => colSong.seek(Number(e.target.value)));
+$('#col-sel-play').addEventListener('click', () => { if (selected != null) playChirp(D.collisions.events[selected]); });
+$('#col-sel-jump').addEventListener('click', () => { if (selected == null) return; const e = D.collisions.events[selected]; colSong.seek(Math.max(0, e.t - Math.min(e.dur, 3) - 0.6)); if (!colSong.playing) colSong.play(); });
+colSong.on(p => { setPlayButton($('#col-play'), p.playing, 'Play the song'); showErr($('#col-err'), p); updateCollisions(); });
+
+/* ------------------------------------------------------------------ song 2: real recordings */
+const cvReal = $('#cv-real');
+let sprite = null, realK = -1;
+function drawReal() {
+  if (!D) return;
+  const R = D.real, n = R.clips.length, t = realSong.time;
+  const k = Math.min(n - 1, Math.floor(t / R.clip_seconds)), within = t - k * R.clip_seconds;
+  const { c, w, h } = fitCanvas(cvReal);
+  const top = h * 0.66;
+  c.clearRect(0, 0, w, h);
+  if (sprite) {
+    const col = k % R.sprite_cols, row = Math.floor(k / R.sprite_cols), [tw, th] = R.tile;
+    c.imageSmoothingEnabled = true; c.drawImage(sprite, col * tw, row * th, tw, th, 0, 0, w, top);
+  } else { c.fillStyle = TOK['surface-2']; c.fillRect(0, 0, w, top); }
+  c.fillStyle = 'rgba(0,0,0,0.35)'; c.fillRect(0, top + 6, w, h - top - 6);
+  if (realSong.buf) {
+    const d = realSong.buf.getChannelData(0), sr = realSong.buf.sampleRate, i0 = Math.floor(k * R.clip_seconds * sr), len = Math.floor(R.clip_seconds * sr);
+    const mid = top + 6 + (h - top - 6) / 2, amp = (h - top - 6) / 2 * 0.9;
+    c.fillStyle = TOK.accent;
+    for (let x = 0; x < w; x++) {
+      const a = i0 + Math.floor(x / w * len), b = Math.max(a + 1, i0 + Math.floor((x + 1) / w * len));
+      let lo = 1, hi = -1; for (let i = a; i < b && i < d.length; i++) { if (d[i] < lo) lo = d[i]; if (d[i] > hi) hi = d[i]; }
+      c.fillRect(x, mid - hi * amp, 1, Math.max(1, (hi - lo) * amp));
+    }
+  }
+  const xm = R.merger_at / R.clip_seconds * w;
+  c.fillStyle = 'rgba(255,255,255,0.7)'; c.fillRect(Math.round(xm), 0, 1, 10);
+  c.fillStyle = '#ffffff'; c.font = '500 10.5px "IBM Plex Mono", monospace'; c.textAlign = 'left'; c.fillText('merger', xm + 4, 11);
+  c.fillStyle = '#fde725'; c.shadowColor = 'rgba(253,231,37,0.8)'; c.shadowBlur = 8;
+  c.fillRect(Math.round(within / R.clip_seconds * w) - 1, 0, 2, h); c.shadowBlur = 0;
+  $('#real-time').textContent = mmss(t) + ' / ' + mmss(realSong.duration || 273);
+  if (document.activeElement !== $('#real-scrub')) $('#real-scrub').value = t;
+  if (k !== realK) {
+    realK = k; const cl = R.clips[k];
+    $('#real-k').textContent = 'Clip ' + (k + 1) + ' of ' + n + ' · starts at ' + mmss(cl.start);
+    $('#real-name').textContent = cl.name;
+    $('#real-desc').textContent = cl.kind[0].toUpperCase() + cl.kind.slice(1) + ', ' + cl.m1 + ' + ' + cl.m2 + ' Suns. ' + cl.date + ', ' + cl.det + ' detector. Signal-to-noise ' + cl.snr +
+      (cl.travel_gyr != null ? '. The waves travelled ' + cl.travel_gyr.toFixed(1) + ' billion years.' : '.');
+    $$('#tiles .tile').forEach((el, i) => el.classList.toggle('on', i === k));
+  }
+}
+redrawers.push(drawReal);
+function buildTiles() {
+  const R = D.real, cols = R.sprite_cols, rows = Math.ceil(R.clips.length / cols), box = $('#tiles');
+  box.innerHTML = '';
+  R.clips.forEach((cl, k) => {
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'tile';
+    b.setAttribute('aria-label', 'Play clip ' + (k + 1) + ': ' + cl.name);
+    const col = k % cols, row = Math.floor(k / cols);
+    b.innerHTML = '<div class="img" style="background-size:' + (cols * 100) + '% ' + (rows * 100) + '%;background-position:' + (col / (cols - 1) * 100) + '% ' + (row / (rows - 1) * 100) + '%"></div><span>' + mmss(cl.start) + ' ' + cl.name + '</span>';
+    b.addEventListener('click', () => { stopSlow(); realSong.play(cl.start); });
+    box.appendChild(b);
+  });
+  const best = R.clips.map((c, k) => ({ c, k })).filter(x => x.c.snr).sort((a, b) => b.c.snr - a.c.snr).slice(0, 5);
+  $('#picks').innerHTML = '';
+  best.forEach(({ c, k }) => {
+    const b = document.createElement('button'); b.type = 'button'; b.textContent = c.name.split('_')[0] + ' (' + c.snr + ')';
+    b.addEventListener('click', () => { stopSlow(); realSong.play(c.start); });
+    $('#picks').appendChild(b);
+  });
+}
+$('#real-song-play').addEventListener('click', () => { stopSlow(); realSong.toggle(); });
+$('#real-scrub').addEventListener('input', e => realSong.seek(Number(e.target.value)));
+cvReal.addEventListener('click', e => { const r = cvReal.getBoundingClientRect(); const k = Math.max(0, realK); realSong.seek(k * D.real.clip_seconds + (e.clientX - r.left) / r.width * D.real.clip_seconds); });
+realSong.on(p => { setPlayButton($('#real-song-play'), p.playing, 'Play the song'); showErr($('#real-err'), p); drawReal(); });
+
+/* ------------------------------------------------------------------ main loop */
+function frame(now) {
+  if (P) {
+    stepHero(now);
+    if (S.slow) {
+      const dt = Math.min(0.1, (now - S.last) / 1000); S.last = now;
+      S.t += dt / S.factor;
+      if (S.t >= S.until) { S.t = S.until; stopSlow(); }
+      renderStage();
+    } else if (gw.playing) {
+      S.t = Math.max(-0.5, Math.min(0.2, D.gw150914.clip_start + gw.time)); renderStage();
+    }
+    if (gw.playing) drawListen();
+    if (colSong.playing) updateCollisions();
+    if (realSong.playing) drawReal();
+  }
+  requestAnimationFrame(frame);
+}
+
+/* ------------------------------------------------------------------ start */
+async function start() {
+  try {
+    const r = await fetch('data.json'); if (!r.ok) throw new Error('HTTP ' + r.status);
+    D = await r.json();
+  } catch (e) {
+    document.querySelector('.page').insertAdjacentHTML('afterbegin', '<p class="err">Couldn’t load the page’s data (' + e.message + '). Reload to try again.</p>');
+    return;
+  }
+  const g = D.gw150914;
+  P = buildPhysics(g);
+  const fills = { m1: g.m1.toFixed(1), m2: g.m2.toFixed(1), final: g.final.toFixed(1), total: g.total.toFixed(1),
+    lost: (g.total - g.final).toFixed(1), travel: g.travel_gyr.toFixed(1), d1: Math.round(2 * RS_KM * g.m1), d2: Math.round(2 * RS_KM * g.m2),
+    fring: Math.round(P.fRing), a100: fmtInt.format(Math.round(P.at(P.tm - 0.1).a / 100) * 100) };
+  $$('[data-f]').forEach(el => { if (fills[el.dataset.f] != null) el.textContent = fills[el.dataset.f]; });
+  renderStage(); drawHero(); drawListen(); buildQuiz(); buildScore(); buildTiles(); drawReal(); updateCollisions();
+  const trio = [['GW190521', 'Thump', 'very heavy: 98 + 57 Suns'], ['GW150914', 'Chirp', 'our merger: 35 + 30 Suns'], ['GW151226', 'Whistle', 'lighter: 14 + 7.5 Suns'], ['GW170817', 'Long whistle', 'two neutron stars']];
+  $('#trio').innerHTML = '';
+  for (const [name, word, sub] of trio) {
+    const i = D.collisions.events.findIndex(e => e.name === name); if (i < 0) continue;
+    const e = D.collisions.events[i];
+    const b = document.createElement('button'); b.type = 'button';
+    b.innerHTML = '<b>' + word + '</b><span>' + name + ' · ' + e.m1 + ' + ' + e.m2 + ' Suns</span>';
+    b.addEventListener('click', () => { selectEvent(i); playChirp(e); });
+    $('#trio').appendChild(b);
+  }
+  selectEvent(D.collisions.events.findIndex(e => e.name === 'GW170817'));
+  loadImage('gw150914_zoom.png').then(im => { zoomImg = im; drawZoom(); }).catch(() => {});
+  loadImage('gw150914_spectrogram.png').then(im => { fullImg = im; drawListen(); }).catch(() => {});
+  loadImage('clip_spectrograms.jpg').then(im => { sprite = im; drawReal(); }).catch(() => {});
+  gw.load().catch(() => {});
+  // the songs are bigger: fetch them after the first sound is ready
+  gw.load().finally(() => { colSong.load().catch(() => {}); realSong.load().catch(() => {}); });
+  let rt; window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(redrawAll, 120); });
+  requestAnimationFrame(frame);
+}
+start();
+</script>
